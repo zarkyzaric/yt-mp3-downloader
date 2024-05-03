@@ -1,74 +1,85 @@
-import subprocess
-import sys
-
-# List of required libraries
-required_libraries = ['pytube', 'moviepy', 'requests', 'beautifulsoup4']
-
-# Check if required libraries are installed
-missing_libraries = [lib for lib in required_libraries if lib not in sys.modules]
-
-if missing_libraries:
-    print("Some required libraries are missing. Installing them now...")
-    
-    # Install missing libraries using pip
-    for lib in missing_libraries:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
-
-    print("All required libraries installed successfully.")
-
 from pytube import YouTube
+import tkinter as tk
+from tkinter import messagebox
+import os
 import moviepy.editor as mp
-import os,sys
 import requests as req
 from bs4 import BeautifulSoup as bs
 import re
+
+# Folder to save the MP3
 # Folder to save the MP3
 sep = os.sep
-# save path is current user Music directory subfolder "Youtube Downloads" (created if doesn't exist)
 save_path = os.path.expanduser("~" + sep + "Music" + sep + "Youtube Downloads" )
-# passes url argument: ex: https://www.youtube.com/watch?v=dQw4w9WgXcQ
-video_url = sys.argv[1]
 
-# Getting cleaned title
-response = req.get(video_url)
-soup = bs(response.text,"html.parser")
-title_elem = soup.find('title')
-if title_elem:
-    full_title = title_elem.text
-else:
-    full_title = "Title not found"
-cleaned_title = re.sub(r'\s*-\sYoutube','',full_title,flags=re.IGNORECASE)
-# print(cleaned_title)
-
-
-def download_audio(url, output_path):
-    yt = YouTube(url)
-    audio_stream = yt.streams.get_audio_only()
-    audio_stream.download(output_path=output_path)
-    return audio_stream.default_filename
-
+# Create the main window
+root = tk.Tk()
+root.title("YouTube Audio Downloader")
+# -------- Functions
 def convert_to_mp3(input_file, output_file):
     clip = mp.AudioFileClip(input_file)
     clip.write_audiofile(output_file)
     clip.close()
 
-# downloads audio only
-audio_filename = download_audio(video_url, save_path)
+def download_audio():
+    url = url_entry.get()  # Get URL from the entry widget
+    if not url.strip():
+        return
+    try:
+        video = YouTube(url)
+        audio_stream = video.streams.get_audio_only()
+        audio_stream.download(output_path=save_path)
+        # audio_stream.download(output_path=save_path, filename=video.title + ".mp3")
+        root.destroy()  # Close the GUI after successful download
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to download: {str(e)}")
+    audio_filename = audio_stream.default_filename
+    # Getting cleaned title
+    response = req.get(url)
+    soup = bs(response.text,"html.parser")
+    title_elem = soup.find('title')
+    if title_elem:
+        full_title = title_elem.text
+    else:
+        full_title = "Title not found"
+    cleaned_title = re.sub(r'\s*-\sYoutube','',full_title,flags=re.IGNORECASE)
+    output_filename = cleaned_title + ".mp3"
+    # print(cleaned_title)
+    convert_to_mp3(os.path.join(save_path,audio_filename),os.path.join(save_path,output_filename))
+    os.remove(os.path.join(save_path, audio_filename))
 
-# creates a name for a new mp3 file
-output_filename = cleaned_title + ".mp3"
+# Automatically use the native theme if available (for newer Tkinter versions)
+try:
+    from tkinter import ttk
+    ttk_style = ttk.Style()
+    ttk_style.theme_use(ttk_style.theme_use())
+except ImportError:
+    pass  # Fallback to default theme if ttk is not available
 
-# converts audio to mp3 and places it into a save path
-convert_to_mp3(os.path.join(save_path, audio_filename), os.path.join(save_path, output_filename))
+# Calculate position for the window to be centered on the screen
+window_width = 500
+window_height = 100
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+center_x = int(screen_width / 2 - window_width / 2)
+center_y = int(screen_height / 2 - window_height / 2)
+root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-# deletes audio only file
-os.remove(os.path.join(save_path, audio_filename))
+# Frame for Entry and Button widgets
+frame = tk.Frame(root)
+frame.pack(pady=20)
 
-# def delete_file(file_path):
-#     if os.path.exists(file_path):
-#         os.remove(file_path)
-#         print(f"Deleted: {file_path}")
-#     else:
-#         print(f"The file does not exist: {file_path}")
+# URL entry widget
+url_entry = tk.Entry(frame, width=40)
+url_entry.grid(row=0, column=0, padx=(0, 10))
+url_entry.focus_set()  # Set focus to the URL entry widget
 
-# delete_file(os.path.join(save_path,audio_filename))
+# Download button
+download_button = tk.Button(frame, text="Download", command=download_audio)
+download_button.grid(row=0, column=1)
+# Bind the Enter key to the download_audio function
+root.bind('<Return>', lambda event: download_audio())
+
+root.mainloop()
+
+
