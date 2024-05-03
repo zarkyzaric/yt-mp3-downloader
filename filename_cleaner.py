@@ -20,13 +20,12 @@ for file_name in files:
         # Check if the file name contains the trash string
         if trash_string in file_name:
             # Create the new name by removing the trash string
-            new_name = re.sub(trash_string, '', new_name, flags=re.IGNORECASE)
             new_name = file_name.replace(trash_string, '')
             # Replace multiple consecutive spaces with a single space
-            new_name = re.sub(r'\s+', ' ', new_name)
-            new_name = re.sub(r'\s*$', '', new_name)
+            # new_name = re.sub(r'\s+', ' ', new_name)
+            # new_name = re.sub(r'\s*$', '', new_name)
             # Remove spaces at the end of the final filename string
-            new_name = new_name.rstrip()
+            new_name = new_name.strip()
             # Rename the file
             os.rename(file_name, new_name)
             print(f'Renamed "{file_name}" to "{new_name}"')
