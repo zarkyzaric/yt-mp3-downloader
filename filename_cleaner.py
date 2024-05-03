@@ -32,3 +32,5 @@ for file_name in files:
             print(f'Renamed "{file_name}" to "{new_name}"')
             # Break out of the inner loop to avoid unnecessary replacements
             break
+        
+#TODO add Prod. by regex and so on
