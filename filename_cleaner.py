@@ -20,10 +20,10 @@ for file_name in files:
         # Check if the file name contains the trash string
         if trash_string in file_name:
             # Create the new name by removing the trash string
+            new_name = re.sub(trash_string, '', new_name, flags=re.IGNORECASE)
             new_name = file_name.replace(trash_string, '')
             # Replace multiple consecutive spaces with a single space
-            trash_spaces = re.compile(r'\s+')
-            new_name = re.sub(trash_spaces, ' ', new_name)
+            new_name = re.sub(r'\s+', ' ', new_name)
             new_name = re.sub(r'\s*$', '', new_name)
             # Remove spaces at the end of the final filename string
             new_name = new_name.rstrip()
@@ -32,5 +32,6 @@ for file_name in files:
             print(f'Renamed "{file_name}" to "{new_name}"')
             # Break out of the inner loop to avoid unnecessary replacements
             break
-        
-#TODO add Prod. by regex and so on
+
+#TODO regex: Prod. by and so on
+#TODO regex: remove everything that's in braces
