@@ -3,7 +3,7 @@ import re
 
 # Define the suffixes to remove as an array of strings
 trash = [
-    ' (OFFICIAL VIDEO)','(OFFICIAL VIDEO)', '[OFFICIAL VIDEO]',
+    ' (OFFICIAL VIDEO)','(OFFICIAL VIDEO)', ' [OFFICIAL VIDEO]',
     ' (OFFICIAL MUSIC VIDEO)','(OFFICIAL MUSIC VIDEO)',
     ' (AUDIO)','(AUDIO)',' (OFFICIAL AUDIO)',
     '(320 kbps)','(128 kbps)','(320)','(128)'
