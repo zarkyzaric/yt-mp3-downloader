@@ -1,36 +1,42 @@
 import os
 import re
 
-# Define the suffixes to remove as an array of strings
+def clean_filenames(directory,trash_patterns):
+
+    # Iterate over all files in the directory
+    for filename in os.listdir(directory):
+        original_filename = filename
+        cleaned_filename = filename
+        
+        # Apply all trash patterns to the filename
+        for pattern in trash_patterns:
+            cleaned_filename = re.sub(pattern, '', cleaned_filename, flags=re.IGNORECASE)
+        
+        # Removes any double or more spaces in a row with a single one
+        cleaned_filename = re.sub(r'\s+',' ',cleaned_filename,flags=re.IGNORECASE)
+
+        # If the filename has changed, rename the file
+        if cleaned_filename != original_filename:
+            original_filepath = os.path.join(directory, original_filename)
+            cleaned_filepath = os.path.join(directory, cleaned_filename)
+            os.rename(original_filepath, cleaned_filepath)
+            # print(f'Renamed "{original_filename}" to "{cleaned_filename}"')
+
+# List of regex patterns to remove from filenames
 trash = [
-    ' (OFFICIAL VIDEO)','(OFFICIAL VIDEO)', ' [OFFICIAL VIDEO]',
-    ' (OFFICIAL MUSIC VIDEO)','(OFFICIAL MUSIC VIDEO)',
-    ' (AUDIO)','(AUDIO)',' (OFFICIAL AUDIO)',
-    '(320 kbps)','(128 kbps)','(320)','(128)'
-    '(Snap2s.com)', '()'
- ]
 
-# Get a list of all files in the current directory
-files = os.listdir('.')
+    # Example pattern to remove '- Youtube'
+    r'\s*\-\s*Youtube',        
+    r'\s?\((OFFICIAL\s)?(MUSIC\s)?(VIDEO|AUDIO)\)', #
+    r'\s?\((320|128)\s?(kbps)?\)',                  #
+    r'\s?\(Snap2s\.com\)',                          #  
+    r'\s?\((\s*)?\)',                               # ()
+    r'\s?Prod\.\sby[^.]+',                          # Handles Prod. by
+    # r'#\S+',
+    ]
 
-# Loop through the files
-for file_name in files:
-    # Iterate over each trash string to remove
-    for trash_string in trash:
-        # Check if the file name contains the trash string
-        if trash_string in file_name:
-            # Create the new name by removing the trash string
-            new_name = file_name.replace(trash_string, '')
-            # Replace multiple consecutive spaces with a single space
-            # new_name = re.sub(r'\s+', ' ', new_name)
-            # new_name = re.sub(r'\s*$', '', new_name)
-            # Remove spaces at the end of the final filename string
-            new_name = new_name.strip()
-            # Rename the file
-            os.rename(file_name, new_name)
-            print(f'Renamed "{file_name}" to "{new_name}"')
-            # Break out of the inner loop to avoid unnecessary replacements
-            break
+# Get the directory of the current script
+current_directory = os.path.dirname(os.path.realpath(__file__))
 
-#TODO regex: Prod. by and so on
-#TODO regex: remove everything that's in braces
+# Clean all filenames in the script's directory
+clean_filenames(directory=current_directory,trash_patterns=trash)
